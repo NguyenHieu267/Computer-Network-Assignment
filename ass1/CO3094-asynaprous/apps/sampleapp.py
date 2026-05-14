@@ -47,7 +47,7 @@ CHANNELS = {
 LOCAL_INBOX = []
 PEER_CONNECTIONS = {}
 INBOX_SEQ = 0
-CURRENT_IP = "192.168.1.175"
+CURRENT_IP = "10.128.60.166"
 CURRENT_PORT = 0
 
 
@@ -93,7 +93,7 @@ def parse_body(body):
 
 
 def split_host_port(value):
-    """Accept '192.168.1.175:2028', {'ip':..., 'port':...}, or None."""
+    """Accept '10.128.60.166:2028', {'ip':..., 'port':...}, or None."""
     if not value:
         return None, None
     if isinstance(value, dict):
@@ -140,7 +140,7 @@ def add_channel_member(channel, username, ip=None, port=None):
     if not username:
         return
     record["members"][username] = {
-        "ip": ip or "192.168.1.175",
+        "ip": ip or "10.128.60.166",
         "port": int(port) if port else None,
         "last_seen": now_ts(),
     }
@@ -238,7 +238,7 @@ def login(headers="guest", body="anonymous"):
 @app.route('/submit-info', methods=['POST'])
 def submit_info(headers="guest", body="anonymous"):
     data = parse_body(body)
-    ip = data.get("ip") or data.get("host") or "192.168.1.175"
+    ip = data.get("ip") or data.get("host") or "10.128.60.166"
     port = data.get("port")
     username = data.get("username") or ("{}:{}".format(ip, port) if port else None)
 
@@ -274,7 +274,7 @@ def add_list(headers="guest", body="anonymous"):
     data = parse_body(body)
     channel_name = data.get("channel_name") or data.get("channel") or "general"
     username = data.get("username") or data.get("sender")
-    ip = data.get("ip") or "192.168.1.175"
+    ip = data.get("ip") or "10.128.60.166"
     port = data.get("port")
 
     ensure_channel(channel_name)

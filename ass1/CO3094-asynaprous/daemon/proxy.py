@@ -51,9 +51,9 @@ _rr_lock = threading.Lock()
 # Default PROXY_PASS fallback (used only when no routes dict is supplied)
 # ---------------------------------------------------------------------------
 PROXY_PASS = {
-    "192.168.1.175:8080":      ('192.168.1.175', 9000),
-    "tracker.local:8080":       ('192.168.1.175', 2026),
-    "peer.local:8080":          ('192.168.1.175', 2027),
+    "10.128.60.166:8080":      ('10.128.60.166', 9000),
+    "tracker.local:8080":       ('10.128.60.166', 2026),
+    "peer.local:8080":          ('10.128.60.166', 2027),
 }
 
 
@@ -131,17 +131,17 @@ def resolve_routing_policy(hostname, routes):
     .. code-block:: python
 
         routes = {
-            "192.168.1.175:8080": ("192.168.1.175:9000", "round-robin"),
-            "tracker.local:8080":          ("192.168.1.175:2026", "round-robin"),
-            "peer.local:8080":          (["192.168.1.175:2027",
-                                     "192.168.1.175:2028"], "round-robin"),
+            "10.128.60.166:8080": ("10.128.60.166:9000", "round-robin"),
+            "tracker.local:8080":          ("10.128.60.166:2026", "round-robin"),
+            "peer.local:8080":          (["10.128.60.166:2027",
+                                     "10.128.60.166:2028"], "round-robin"),
         }
 
     Policy handling:
     - **Single backend** – use it directly.
     - **Multiple backends + round-robin** – advance the per-host counter and
       pick the backend at ``counter % len(backends)``.
-    - **Unknown host** – fall back to ``192.168.1.175:9000`` and log a warning.
+    - **Unknown host** – fall back to ``10.128.60.166:9000`` and log a warning.
 
     :param hostname (str): Value of the ``Host`` HTTP header from the client.
     :param routes (dict): Routing table from ``parse_virtual_hosts``.
@@ -162,7 +162,7 @@ def resolve_routing_policy(hostname, routes):
             route_key = host_with_proxy_port
         else:
             print("[Proxy] WARNING – hostname '{}' not found in routes, using fallback".format(hostname))
-            return '192.168.1.175', 9000
+            return '10.128.60.166', 9000
 
     proxy_map, policy = routes[route_key]
     print("[Proxy]   proxy_map={!r}  policy={!r}".format(proxy_map, policy))
@@ -178,7 +178,7 @@ def resolve_routing_policy(hostname, routes):
     if isinstance(proxy_map, list):
         if len(proxy_map) == 0:
             print("[Proxy] Empty backend list for '{}', using fallback".format(hostname))
-            return '192.168.1.175', 9000
+            return '10.128.60.166', 9000
 
         if len(proxy_map) == 1:
             chosen = proxy_map[0]
@@ -199,7 +199,7 @@ def resolve_routing_policy(hostname, routes):
 
     # ------------------------------------------------------------------ unexpected type
     print("[Proxy] Unexpected proxy_map type {}, using fallback".format(type(proxy_map)))
-    return '192.168.1.175', 9000
+    return '10.128.60.166', 9000
 
 
 def handle_client(ip, port, conn, addr, routes):
