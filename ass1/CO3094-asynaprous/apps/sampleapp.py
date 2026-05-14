@@ -23,6 +23,18 @@ import time
 
 from daemon import AsynapRous
 
+
+def _detect_local_ip():
+    """Auto-detect the machine's LAN IP by connecting to an external address."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
 app = AsynapRous()
 
 TRACKER_PEERS = {}
@@ -35,7 +47,7 @@ CHANNELS = {
 LOCAL_INBOX = []
 PEER_CONNECTIONS = {}
 INBOX_SEQ = 0
-CURRENT_IP = "127.0.0.1"
+CURRENT_IP = "192.168.1.175"
 CURRENT_PORT = 0
 
 
@@ -81,7 +93,7 @@ def parse_body(body):
 
 
 def split_host_port(value):
-    """Accept '127.0.0.1:2028', {'ip':..., 'port':...}, or None."""
+    """Accept '192.168.1.175:2028', {'ip':..., 'port':...}, or None."""
     if not value:
         return None, None
     if isinstance(value, dict):
@@ -128,7 +140,7 @@ def add_channel_member(channel, username, ip=None, port=None):
     if not username:
         return
     record["members"][username] = {
-        "ip": ip or "127.0.0.1",
+        "ip": ip or "192.168.1.175",
         "port": int(port) if port else None,
         "last_seen": now_ts(),
     }
@@ -226,7 +238,7 @@ def login(headers="guest", body="anonymous"):
 @app.route('/submit-info', methods=['POST'])
 def submit_info(headers="guest", body="anonymous"):
     data = parse_body(body)
-    ip = data.get("ip") or data.get("host") or "127.0.0.1"
+    ip = data.get("ip") or data.get("host") or "192.168.1.175"
     port = data.get("port")
     username = data.get("username") or ("{}:{}".format(ip, port) if port else None)
 
@@ -262,7 +274,7 @@ def add_list(headers="guest", body="anonymous"):
     data = parse_body(body)
     channel_name = data.get("channel_name") or data.get("channel") or "general"
     username = data.get("username") or data.get("sender")
-    ip = data.get("ip") or "127.0.0.1"
+    ip = data.get("ip") or "192.168.1.175"
     port = data.get("port")
 
     ensure_channel(channel_name)
@@ -425,7 +437,10 @@ def global_preflight_handler(headers=None, body=None):
 
 def create_sampleapp(ip, port):
     global CURRENT_IP, CURRENT_PORT
-    CURRENT_IP = ip if ip not in ("0.0.0.0", "") else "127.0.0.1"
+    if ip in ("0.0.0.0", ""):
+        CURRENT_IP = _detect_local_ip()
+    else:
+        CURRENT_IP = ip
     CURRENT_PORT = int(port)
     print("[sampleapp] Starting node at {}:{}".format(CURRENT_IP, CURRENT_PORT))
     app.prepare_address(ip, port)

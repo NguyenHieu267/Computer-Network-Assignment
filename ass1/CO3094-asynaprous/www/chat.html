@@ -28,6 +28,7 @@
             <div class="box">
                 <h3>1. Setup Session</h3>
                 <input type="text" id="username" placeholder="Username, e.g. viet">
+                <input type="text" id="local-ip" placeholder="Your machine IP, e.g. 192.168.1.72">
                 <input type="number" id="local-port" value="2027" placeholder="Local Peer Port">
                 <button class="btn" onclick="login()">Login</button>
                 <button class="btn" style="background:#34a853" onclick="submitPeerInfo()">Submit Peer Info</button>
@@ -85,8 +86,9 @@
         let lastInboxId = 0;
 
         function getUsername() { return document.getElementById('username').value.trim(); }
+        function getLocalIP() { return document.getElementById('local-ip').value.trim() || 'localhost'; }
         function getLocalPort() { return parseInt(document.getElementById('local-port').value, 10); }
-        function localPeerBase() { return `http://127.0.0.1:${getLocalPort()}`; }
+        function localPeerBase() { return `http://${getLocalIP()}:${getLocalPort()}`; }
         function addrOf(info) { return `${info.ip}:${info.port}`; }
         function safeJsonParse(text) { try { return JSON.parse(text); } catch (_) { return null; } }
 
@@ -148,10 +150,12 @@
 
         async function submitPeerInfo() {
             const user = getUsername();
+            const ip = getLocalIP();
             const port = getLocalPort();
             if (!user || !port) return alert('Enter Username and Port first!');
+            if (ip === 'localhost') return alert('Enter your machine IP first! (e.g. 192.168.1.72)');
             try {
-                const data = await request(`${TRACKER_BASE}/submit-info`, 'POST', { username: user, ip: '127.0.0.1', port });
+                const data = await request(`${TRACKER_BASE}/submit-info`, 'POST', { username: user, ip: ip, port });
                 updateConsole('/submit-info', data);
                 updatePeerList(data);
                 updateChannelList(data);
@@ -220,7 +224,7 @@
             try {
                 const data = await request(`${TRACKER_BASE}/add-list`, 'POST', {
                     username: user,
-                    ip: '127.0.0.1',
+                    ip: getLocalIP(),
                     port,
                     channel_name: channel
                 });
@@ -246,7 +250,7 @@
             try {
                 const data = await request(`${localPeerBase()}/connect-peer`, 'POST', {
                     username: user,
-                    ip: '127.0.0.1',
+                    ip: getLocalIP(),
                     port,
                     peer: targetName,
                     to: addrOf(targetInfo)
